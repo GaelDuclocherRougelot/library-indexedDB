@@ -1,16 +1,19 @@
 /* eslint-disable react/prop-types */
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addBook, updateBook } from "../../redux/book/book";
-import { updateBookIDB } from "../../utils/BookService";
 import { useNavigate } from "react-router-dom";
+import { addBook, setBookToEdit, updateBook } from "../../redux/book/book";
+import {
+  postOneBookToFirebase,
+  updateFirebaseBookById,
+} from "../../utils/FirebaseService";
 
 export default function BookForm() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const EditMode = useSelector((state) => state.book.editMode);
   const bookToEdit = useSelector((state) => state.book.bookToEdit);
-  console.log(EditMode);
+
   const [title, setTitle] = useState(
     EditMode && bookToEdit !== null ? bookToEdit.title : ""
   );
@@ -27,17 +30,18 @@ export default function BookForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (EditMode) {
-      dispatch(
-        updateBook({ book_id: bookToEdit.id, title: title, description, image, category })
-      );
-      updateBookIDB({
+      updateFirebaseBookById({
         id: bookToEdit.id,
         title: title,
         description,
-        category,
         image,
+        category,
       });
+      dispatch(
+        updateBook({ book_id: bookToEdit.id, title: title, description, image, category })
+      );
     } else {
+      postOneBookToFirebase({ title, description, image, category });
       dispatch(addBook({ title, description, image, category }));
     }
 
@@ -45,6 +49,7 @@ export default function BookForm() {
     setDescription("");
     setImage("");
     setCategory("");
+    dispatch(setBookToEdit(null));
     navigate("/");
   };
 
@@ -56,6 +61,7 @@ export default function BookForm() {
         onChange={(e) => setTitle(e.target.value)}
         className="border p-2"
         placeholder="Titre"
+        required={!EditMode ? true : false}
       />
       <textarea
         value={description}
@@ -78,9 +84,10 @@ export default function BookForm() {
         onChange={(e) => setCategory(e.target.value)}
         placeholder="Category"
         className="p-2 border"
+        required={!EditMode ? true : false}
       />
       <button type="submit" className="border p-2 bg-gray-800 text-white">
-        Envoyer
+        {EditMode ? "Modifier le livre" : "Publier le livre"}
       </button>
     </form>
   );

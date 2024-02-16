@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
-import { deleteBookIDB, updateBookIDB } from "../../utils/BookService";
 
 const initialState = {
   books: [],
@@ -30,7 +29,6 @@ export const BookSlice = createSlice({
         category: actions.payload.category,
       };
       state.books = [...state.books, newBook];
-      updateBookIDB(newBook);
     },
     updateBook: (state, action) => {
       let book_id = action.payload.book_id;
@@ -45,16 +43,15 @@ export const BookSlice = createSlice({
       state.books = newBooks;
       state.editMode = false;
     },
-    deletetask: (state, action) => {
+    deleteBook: (state, action) => {
       let book_id = action.payload
       let index = state.books.findIndex(t => t.id.toString() === book_id.toString())
       state.books.splice(index, 1)
-      deleteBookIDB(book_id);
   },
   },
 });
 
-export const { setBooks, setEditMode, addBook, updateBook, setBookToEdit, deletetask } =
+export const { setBooks, setEditMode, addBook, updateBook, setBookToEdit, deleteBook } =
   BookSlice.actions;
 
 export default BookSlice.reducer;
